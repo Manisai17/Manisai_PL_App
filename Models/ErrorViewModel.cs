@@ -1,4 +1,4 @@
-namespace Manisai_PL_App.Models
+﻿namespace Manisai_PL_App.Models
 {
     public class ErrorViewModel
     {

@@ -28,7 +28,6 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
-[Oo]bj/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
@@ -361,3 +360,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+*.bak
