@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Manisai_PL_App.Middleware;
 using Manisai_PL_App.Models;
-using Manisai_PL_App.Services;
+//using Manisai_PL_App.Services;
 using Serilog;
 using System.Text;
 
@@ -24,7 +24,7 @@ builder.Services.AddDbContext<PlappContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PlAppConnection")));
 
 // Mail service
-builder.Services.AddTransient<IMailService, MailService>();
+//builder.Services.AddTransient<IMailService, MailService>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

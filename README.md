@@ -15,7 +15,7 @@ scratch as a learning + portfolio project.
 
 ## Progress
 - [x] Part 1 — Program.cs wiring + custom RequestLoggingMiddleware
-- [ ] Part 2 — EF Core models + PlappContext
+- [x] Part 2 — EF Core models + PlappContext (database layer complete)
 - [ ] Part 3 — DTOs
 - [ ] Part 4 — Services (Mail/OTP, loan calculator)
 - [ ] Part 5 — BasicDetails flow + OTP verification
@@ -28,40 +28,39 @@ scratch as a learning + portfolio project.
 ---
 
 ## Part 1 — Application Startup & Custom Middleware
+(unchanged — see previous commit)
+
+---
+
+## Part 2 — Database Models & PlappContext
 
 ### What this part does
-This is the entry point of the entire application. `Program.cs` is the
-first code that runs when the app starts — it configures every service
-the app needs (MVC, database, authentication, logging) and defines the
-pipeline every HTTP request passes through before reaching a controller.
+Defines every table in the loan application as a C# class (EF Core
+code-first models), and PlappContext — the class representing the whole
+database, wiring the relationships between tables together.
 
-### Why it's structured this way
-ASP.NET Core uses a builder pattern: first you register everything the
-app might need (`builder.Services.Add...`), then you `Build()` the app,
-then you configure the order in which incoming requests get processed
-(`app.Use...`).
+### Models included
+- Basicdetail — the core application record
+- Personaldetail, Companydetail, Bankdetail, Loandetail,
+  Docuploaddetail — child records linked to a Basicdetail via foreign key
+- Panmaster, Aadharmaster, Pincodemaster, Companymaster, Doctypemaster,
+  Rulesmaster — lookup tables used to validate submitted data
+- Usermaster — login credentials and role, for JWT authentication (Part 8)
+- Otpmaster — persisted OTP codes with expiry (used in Part 4/5)
+- StandardMessages — static applicant-facing status text
 
-### Key pieces and their purpose
-- **AddControllersWithViews()** — enables the MVC pattern: controllers
-  that return HTML views.
-- **UseSerilog(...)** — structured logging (named fields, not just text),
-  searchable and filterable later.
-- **AddDbContext<PlappContext>** — registers the database connection via
-  dependency injection.
-- **AddJwtBearer(...)** — configures JWT validation: issuer, audience,
-  expiry, and signature checks. Not yet used (Part 8).
-- **AddAuthorization policies** — AdminPolicy/UserPolicy define what role
-  a token needs for certain endpoints. Not yet enforced anywhere (Part 8).
-- **Middleware pipeline order** — HTTPS redirect → static files →
-  Serilog request logging → custom RequestLoggingMiddleware → routing →
-  authentication → authorization → controller action. Order matters:
-  each step depends on information the previous step established.
+### Why code-first
+C# model classes are the source of truth; the database schema is
+generated from them via EF Core migrations, never edited by hand.
 
-### Custom Middleware — RequestLoggingMiddleware.cs
-Wraps every request, logging when it started, finished, how long it
-took, and the response status code. Written by hand to demonstrate real
-understanding of the RequestDelegate pipeline pattern, rather than
-relying only on Serilog's built-in request logging.
+### Key design choices
+- Nullable properties (`string?`, `int?`) — most fields are optional
+  since applications are saved in a partial state through the wizard
+- `decimal` for money/interest fields — avoids floating-point rounding
+  errors; exact for financial calculations
+- `virtual ICollection<T>` navigation properties — EF Core loads related
+  rows without manual join queries
+- Explicit `HasOne().WithMany().HasForeignKey()` — removes ambiguity
+  about how tables relate
 
-### Database changes needed this part
-None. No models exist yet.
+### Database changes made this part
