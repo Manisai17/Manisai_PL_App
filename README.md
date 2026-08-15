@@ -16,7 +16,7 @@ scratch as a learning + portfolio project.
 ## Progress
 - [x] Part 1 — Program.cs wiring + custom RequestLoggingMiddleware
 - [x] Part 2 — EF Core models + PlappContext (database layer complete)
-- [ ] Part 3 — DTOs
+- [x] Part 3 — DTOs (RootDto + 6 stage-specific DTOs)
 - [ ] Part 4 — Services (Mail/OTP, loan calculator)
 - [ ] Part 5 — BasicDetails flow + OTP verification
 - [ ] Part 6 — PersonalDetails, CompanyDetails
@@ -33,34 +33,40 @@ scratch as a learning + portfolio project.
 ---
 
 ## Part 2 — Database Models & PlappContext
+(unchanged — see previous commit)
+
+---
+
+## Part 3 — DTOs (Data Transfer Objects)
 
 ### What this part does
-Defines every table in the loan application as a C# class (EF Core
-code-first models), and PlappContext — the class representing the whole
-database, wiring the relationships between tables together.
+Defines the data shapes that travel between the browser and the server
+for each step of the loan wizard — deliberately separate from the EF
+Core Models used for the database.
 
-### Models included
-- Basicdetail — the core application record
-- Personaldetail, Companydetail, Bankdetail, Loandetail,
-  Docuploaddetail — child records linked to a Basicdetail via foreign key
-- Panmaster, Aadharmaster, Pincodemaster, Companymaster, Doctypemaster,
-  Rulesmaster — lookup tables used to validate submitted data
-- Usermaster — login credentials and role, for JWT authentication (Part 8)
-- Otpmaster — persisted OTP codes with expiry (used in Part 4/5)
-- StandardMessages — static applicant-facing status text
+### DTOs included
+- `RootDto` — base class carrying AppId, Name, AppStage, AppStatus,
+  Message — fields every wizard stage needs, marked `[ValidateNever]`
+  since they're populated by the server on the way out, not submitted
+  by the user
+- `BasicDetailsDto`, `PersonalDetailsDto`, `CompanyDetailsDto`,
+  `BankDetailsDto`, `LoanDetailsDto` — one per wizard stage, each
+  inheriting from `RootDto`
+- `OtpDto` — request/response shape for OTP generation and validation
 
-### Why code-first
-C# model classes are the source of truth; the database schema is
-generated from them via EF Core migrations, never edited by hand.
+### Why DTOs are separate from Models
+- Field names can differ from database columns to match what a form
+  actually sends (e.g. `MobileNumber` vs the Model's `Mobile`)
+- Avoids exposing database-only concerns (Ids, navigation properties)
+  directly to incoming requests
+- Prevents over-posting — a request can only set the fields explicitly
+  listed on the DTO, nothing else
 
-### Key design choices
-- Nullable properties (`string?`, `int?`) — most fields are optional
-  since applications are saved in a partial state through the wizard
-- `decimal` for money/interest fields — avoids floating-point rounding
-  errors; exact for financial calculations
-- `virtual ICollection<T>` navigation properties — EF Core loads related
-  rows without manual join queries
-- Explicit `HasOne().WithMany().HasForeignKey()` — removes ambiguity
-  about how tables relate
+### Known inconsistencies carried from the original design (to fix later)
+- `BasicDetailsDto.Dob` is `DateTime`; the Model correctly uses
+  `DateOnly` — needs explicit conversion when mapping between them
+- `LoanDetailsDto` uses `double` for money/interest fields; the Model
+  correctly uses `decimal` — same conversion care needed
 
-### Database changes made this part
+### Database changes needed this part
+None — DTOs are not persisted; no migration required.
