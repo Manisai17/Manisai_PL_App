@@ -1,10 +1,9 @@
-using MailKit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Manisai_PL_App.Middleware;
 using Manisai_PL_App.Models;
-//using Manisai_PL_App.Services;
+using Manisai_PL_App.Services;
 using Serilog;
 using System.Text;
 
@@ -23,8 +22,8 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddDbContext<PlappContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PlAppConnection")));
 
-// Mail service
-//builder.Services.AddTransient<IMailService, MailService>();
+// Mail service (your own implementation, not MailKit’s)
+builder.Services.AddTransient<IMailService, MailService>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -39,7 +38,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ClockSkew = TimeSpan.Zero // removes default 5‑minute grace period
         };
     });
 

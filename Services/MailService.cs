@@ -29,27 +29,23 @@ namespace Manisai_PL_App.Services
             message.From.Add(new MailboxAddress(sendername, sendermail));
             message.To.Add(new MailboxAddress(toname, tomail));
             message.Subject = subject;
+            message.Body = new TextPart("plain") { Text = content };
 
-            message.Body = new TextPart("plain")
+            try
             {
-                Text = content
-            };
-
-            using (var client = new SmtpClient())
-            {
-                client.Connect(_smtpServer, Convert.ToInt32(_smtpPort), SecureSocketOptions.StartTls);
-                client.Authenticate(_smtpUsername, _smtpPassword);
-                try
+                using (var client = new SmtpClient())
                 {
+                    client.Connect(_smtpServer, Convert.ToInt32(_smtpPort), SecureSocketOptions.StartTls);
+                    client.Authenticate(_smtpUsername, _smtpPassword);
                     client.Send(message);
+                    client.Disconnect(true);
                 }
-                catch (Exception e)
-                {
-                    return "Error in sending email :: " + e.Message;
-                }
-                client.Disconnect(true);
+                return "OK";
             }
-            return "OK";
+            catch (Exception e)
+            {
+                return "Error in sending email :: " + e.Message;
+            }
         }
     }
 }

@@ -1,0 +1,13 @@
+﻿<h2>Enter OTP sent to @ViewBag.EmailId</h2>
+@if (ViewBag.msg != null)
+{
+    <div class="alert alert-danger">@ViewBag.msg</div>
+}
+<form asp-controller="BasicDetails" asp-action="ValidateOtp" method="get">
+    <input type="hidden" name="Emailid" value="@ViewBag.EmailId" />
+    <div class="mb-3">
+        <label>OTP</label>
+        <input name="otp" type="number" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Verify</button>
+</form>

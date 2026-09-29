@@ -4,11 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>88528650-5f74-425c-bd4a-d2953b9201db</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Views\Home\" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>
