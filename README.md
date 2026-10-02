@@ -1,82 +1,97 @@
 ﻿# Personal Loan Application (PL_APP_MVC)
 
-An ASP.NET Core MVC loan application wizard with OTP email verification,
-JWT authentication with role-based authorization, Serilog structured
-logging, and custom middleware. Built from scratch as a learning and
-portfolio project.
+An ASP.NET Core MVC loan application wizard with JWT authentication and
+enforced role-based authorization, Serilog structured logging, a custom
+request-logging middleware, and OTP email verification — built from
+scratch as a learning + portfolio project.
 
 **Status: in active development.**
 
 ## Tech stack
+- ASP.NET Core MVC (.NET 10)
 - Entity Framework Core (code-first) + SQL Server
-- JWT Bearer authentication with policy-based role authorization
-- Serilog (console + rolling file sinks)
+- JWT Bearer authentication with role-based authorization policies
+- Serilog (structured logging, console + file sinks)
 - MailKit (SMTP email via Brevo)
 - BCrypt (password hashing)
 - Custom ASP.NET Core middleware
 
 ## Progress
-- [x] Part 1: Program.cs wiring and custom RequestLoggingMiddleware
-- [x] Part 2: EF Core models, PlappContext, initial migration (14 tables)
-- [x] Part 3: DTOs (RootDto plus stage-specific DTOs)
-- [x] Part 4: Services (MailService, LoanCalculatorService, StageViewMapper)
-- [x] Part 5: OTP verification and Basic Details (MVC and API controllers)
-- [ ] Part 6: Personal and Company details
-- [ ] Part 7: Bank, Loan, Document upload, Thank you
-- [ ] Part 8: JWT login and role-protected Manager API
-- [ ] Part 9: Remaining views
-- [ ] Part 10: End-to-end testing and polish
+- [x] Part 1 — Program.cs wiring + custom RequestLoggingMiddleware
+- [x] Part 2 — EF Core models + PlappContext (database layer complete)
+- [x] Part 3 — DTOs (RootDto + 6 stage-specific DTOs)
+- [x] Part 4 — Services (Mail/OTP, loan calculator, stage view mapper)
+- [x] Part 5 — HomeController, BasicDetailsController/API + real OTP flow
+- [x] Part 6 — PersonalDetails, CompanyDetails (MVC + API), business-rule rejection
+- [ ] Part 7 — BankDetails, LoanDetails, DocUpload, ThankYou
+- [ ] Part 8 — JWT login, ManagerAPIController, enforced role authorization
+- [ ] Part 9 — Views
+- [ ] Part 10 — End-to-end testing, secrets cleanup, final polish
 
-## Running locally
-1. Install .NET SDK and SQL Server (Express or Developer).
-2. Clone the repo and open the solution in Visual Studio.
-3. Store secrets with user-secrets (never commit them):
-   - `SmtpSettings:SmtpPassword` (SMTP key)
-   - `Jwt:Key` (random string, 32+ characters)
-4. In Package Manager Console run `Update-Database` to create the PLAPP database.
-5. Seed the master tables (PAN, Aadhaar, pincode, rules) with test rows.
-6. Press F5.
+## Actual wizard stage order
+Basic Details → Company Details → Loan Details → Personal Details →
+Bank Details → Document Upload → Thank You
+(Driven entirely by `StageViewMapper`'s lookup table — not necessarily
+the order these controllers were built in.)
 
-## Part 1: Startup and middleware
-`Program.cs` registers MVC, Serilog, the EF Core DbContext, the mail
-service, JWT authentication and role policies, then defines the request
-pipeline: HTTPS redirect, static files, Serilog request logging, custom
-`RequestLoggingMiddleware`, routing, authentication, authorization.
-Order matters: authentication must run before authorization.
+---
 
-## Part 2: Database layer
-14 code-first entities: the loan application (`Basicdetail`) with child
-records (personal, company, bank, loan, documents), master tables used
-for validation (PAN, Aadhaar, pincode, company, document types, rules),
-`Usermaster` for logins and `Otpmaster` for OTPs. Money and rate fields
-use `decimal` to avoid floating-point rounding.
+## Part 1 — Application Startup & Custom Middleware
+(unchanged — see previous commit)
 
-## Part 3: DTOs
-Separate request/response shapes for each wizard stage, inheriting
-shared fields (AppId, stage, status, message) from `RootDto`. DTOs keep
-database entities out of the web layer and prevent over-posting.
+---
 
-## Part 4: Services
-- `IMailService` / `MailService`: SMTP email through MailKit
-- `LoanCalculatorService`: eligibility (tenure, rate, EMI) from rules
-- `StageViewMapper`: maps an application's stage to the next page
+## Part 2 — Database Models & PlappContext
+(unchanged — see previous commit)
 
-## Part 5: OTP verification and Basic Details
-Two controllers share the same logic:
-- `BasicDetailsController` (MVC): the browser wizard
-- `BasicDetailsAPIController` (JSON): `GenerateOtp`, `ValidateOtp`,
-  `ValidateBasicDetails`, testable in Postman
+---
 
-Flow: email, then an OTP is created and emailed (stored in `Otpmaster`
-with a 5-minute expiry), then verification creates the application
-record, then PAN, Aadhaar, pincode and age are validated against master
-tables and the details saved.
+## Part 3 — DTOs (Data Transfer Objects)
+(unchanged — see previous commit)
 
-Design decisions and fixes:
-- OTPs persisted with expiry instead of an in-memory Hashtable
-  (survives restarts, expires properly)
-- Age calculated from date of birth, with a corrected range check
-- Null guards added so invalid input returns a clear error, not a crash
+---
 
-### Database changes in this part
-None. Tables were created in Part 2.
+## Part 4 — Services
+(unchanged — see previous commit)
+
+---
+
+## Part 5 — BasicDetails Flow & OTP Verification
+(unchanged — see previous commit)
+
+---
+
+## Part 6 — PersonalDetails & CompanyDetails
+
+### What this part does
+Two more wizard stages, following the same pattern as Part 5: look up
+an existing child record (or create one), save submitted data, advance
+the application's stage, redirect to the next stage via
+`StageViewMapper`. Company Details additionally runs business-rule
+validation (income and obligation checks) and can reject the
+application outright.
+
+### Controllers included
+- `PersonalDetailsController` — father/mother names, addresses, two
+  references
+- `CompanyDetailsController` — company info, income, obligations;
+  derives `Category` from `Companymasters`; rejects applications that
+  fail income or obligation rules from `Rulesmasters`
+- `CompanyDetailsAPIController` — JSON equivalent of the above
+
+### Key patterns introduced
+- Null-coalescing (`??`) to satisfy non-nullable Model fields from
+  nullable Dto fields
+- Null-conditional (`?.`) combined with `??` to safely derive a value
+  from a lookup that might not find a match
+- Existing-vs-new record handling (`isExisting`/`isNew` flags) so
+  resubmitting a stage updates rather than duplicates
+- `StandardMessages` and `StageViewMapper` used for the first time
+
+### Bug fixed
+Division by zero when calculating obligation percentage if gross
+income is submitted as 0 — guarded with a `> 0` check before dividing.
+
+### Database changes needed this part
+None. `Personaldetails` and `Companydetails` tables already exist from
+Part 2.
