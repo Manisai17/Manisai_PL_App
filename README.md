@@ -8,7 +8,6 @@ portfolio project.
 **Status: in active development.**
 
 ## Tech stack
-- ASP.NET Core MVC (.NET 10)
 - Entity Framework Core (code-first) + SQL Server
 - JWT Bearer authentication with policy-based role authorization
 - Serilog (console + rolling file sinks)
