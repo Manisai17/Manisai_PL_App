@@ -1,0 +1,15 @@
+﻿<h2>Upload Document</h2>
+<form asp-controller="DocUpload" asp-action="UploadDocument" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="@ViewBag.Id" />
+    <div class="mb-3">
+        <label>Document Type</label>
+        <select name="docType" class="form-control">
+            <option>PAN Card</option>
+            <option>Aadhar Card</option>
+            <option>Salary Slip</option>
+            <option>Bank Statement</option>
+        </select>
+    </div>
+    <div class="mb-3"><label>File</label><input name="document" type="file" class="form-control" required /></div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>

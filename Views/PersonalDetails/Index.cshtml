@@ -1,0 +1,24 @@
+﻿@model PersonalDetailsDto
+<h2>Personal Details</h2>
+<form asp-controller="PersonalDetails" asp-action="SavePersonalDetails" method="post"> 
+    <input type="hidden" name="AppId" value="@Model.AppId" />
+    <div class="mb-3"><label>Father's Name</label><input name="Fathername" class="form-control" required /></div>
+    <div class="mb-3"><label>Mother's Name</label><input name="Mothername" class="form-control" /></div>
+    <div class="mb-3"><label>Permanent Address</label><textarea name="Permanentaddress" class="form-control" required></textarea></div>
+    <div class="mb-3"><label>Current Address</label><textarea name="Currentaddress" class="form-control" required></textarea></div>
+    <h5>Reference 1</h5>
+    <div class="row">
+        <div class="col-md-3"><input name="Reference1name" class="form-control mb-2" placeholder="Name" required /></div>
+        <div class="col-md-3"><input name="Reference1email" class="form-control mb-2" placeholder="Email" /></div>
+        <div class="col-md-3"><input name="Reference1mobile" class="form-control mb-2" placeholder="Mobile" /></div>
+        <div class="col-md-3"><input name="Reference1relation" class="form-control mb-2" placeholder="Relation" /></div>
+    </div>
+    <h5>Reference 2</h5>
+    <div class="row">
+        <div class="col-md-3"><input name="Reference2name" class="form-control mb-2" placeholder="Name" /></div>
+        <div class="col-md-3"><input name="Reference2email" class="form-control mb-2" placeholder="Email" required /></div>
+        <div class="col-md-3"><input name="Reference2mobile" class="form-control mb-2" placeholder="Mobile" /></div>
+        <div class="col-md-3"><input name="Reference2relation" class="form-control mb-2" placeholder="Relation" /></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save & Continue</button>
+</form>

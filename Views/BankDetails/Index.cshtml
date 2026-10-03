@@ -1,0 +1,18 @@
+﻿@model BankDetailsDto
+<h2>Bank Details</h2>
+<form asp-controller="BankDetails" asp-action="SaveBankDetails" method="post">
+    <input type="hidden" name="AppId" value="@Model.AppId" />
+    <div class="mb-3"><label>Bank Name</label><input name="Bankname" class="form-control" required /></div>
+    <div class="mb-3"><label>Branch</label><input name="Bankbranch" class="form-control" required /></div>
+    <div class="mb-3"><label>IFSC Code</label><input name="Ifsccode" class="form-control" required /></div>
+    <div class="mb-3">
+        <label>Account Type</label>
+        <select name="Acctype" class="form-control">
+            <option>Savings</option>
+            <option>Current</option>
+        </select>
+    </div>
+    <div class="mb-3"><label>Account Number</label><input name="Accnumber" type="number" class="form-control" required /></div>
+    <div class="mb-3"><label>Account Holder Name</label><input name="Accholdername" class="form-control" required /></div>
+    <button type="submit" class="btn btn-primary">Save & Continue</button>
+</form>

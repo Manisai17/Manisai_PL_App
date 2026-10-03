@@ -1,0 +1,15 @@
+﻿@model LoanDetailsDto
+<h2>Loan Eligibility</h2>
+<div class="alert alert-info">
+    You're eligible for a loan between <strong>₹@Model.MinLoanAmount</strong> and <strong>₹@Model.MaxLoanAmount</strong>
+    at <strong>@Model.Roi%</strong> interest over <strong>@Model.Tenure months</strong>.
+    Estimated EMI: <strong>₹@Model.Emi</strong>/month.
+</div>
+<form asp-controller="LoanDetails" asp-action="SaveLoanDetails" method="post">
+    <input type="hidden" name="AppId" value="@Model.AppId" />
+    <input type="hidden" name="MaxLoanAmount" value="@Model.MaxLoanAmount" />
+    <input type="hidden" name="Tenure" value="@Model.Tenure" />
+    <input type="hidden" name="Roi" value="@Model.Roi" />
+    <input type="hidden" name="Emi" value="@Model.Emi" />
+    <button type="submit" class="btn btn-primary">Accept & Continue</button>
+</form>

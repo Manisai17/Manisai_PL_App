@@ -1,0 +1,13 @@
+﻿@{
+    var id = ViewBag.Appid;
+}
+<h2>Company Details</h2>
+<form asp-controller="CompanyDetails" asp-action="SaveCompanyDetails" method="post">
+    <input type="hidden" name="AppId" value="@id" />
+    <div class="mb-3"><label>Company Name</label><input name="Companyname" class="form-control" required /></div>
+    <div class="mb-3"><label>Company Email</label><input name="Companymailid" type="email" class="form-control" required /></div>
+    <div class="mb-3"><label>Gross Income</label><input name="Grossincome" type="number" class="form-control" required /></div>
+    <div class="mb-3"><label>Existing Obligations</label><input name="Obligations" type="number" class="form-control" required /></div>
+    <div class="mb-3"><label>Company Address</label><textarea name="Companyaddress" class="form-control"></textarea></div>
+    <button type="submit" class="btn btn-primary">Save & Continue</button>
+</form>

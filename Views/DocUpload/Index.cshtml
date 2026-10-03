@@ -1,0 +1,10 @@
+﻿@model List<Docuploaddetail>
+<h2>Uploaded Documents</h2>
+<ul class="list-group mb-3">
+    @foreach (var doc in Model)
+    {
+        <li class="list-group-item">@doc.Doctype</li>
+    }
+</ul>
+<a asp-controller="DocUpload" asp-action="AddNewDocument" asp-route-id="@ViewBag.Id" class="btn btn-secondary">Add Document</a>
+<a asp-controller="DocUpload" asp-action="SaveChanges" asp-route-id="@ViewBag.Id" class="btn btn-primary">Finish</a>

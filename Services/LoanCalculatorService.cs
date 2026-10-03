@@ -9,6 +9,11 @@ namespace Manisai_PL_App.Services
         {
             // tenure should not exceed available age limit
             Rulesmaster rule = rulesMasters.FirstOrDefault(rule => rule.Rulename == "age");
+            if (rule == null)
+            {
+                throw new InvalidOperationException("Business rule 'age' is not configured in Rulesmasters.");
+            }
+
             int MinTenure = 12;
 
             int Tenure = (int)(rule.Maxvalue - age) * 12;

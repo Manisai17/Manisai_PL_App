@@ -154,5 +154,14 @@ namespace Manisai_PL_App.Controllers
             string[] words = mapping.Split('/');
             return RedirectToAction(words[1], words[0], new { id = basicDetail.Id });
         }
+        public IActionResult BasicDetails(int id)
+        {
+            var basicDetails = _context.Basicdetails.FirstOrDefault(b => b.Id == id);
+            if (basicDetails == null) return NotFound();
+
+            ViewBag.Emailid = basicDetails.Emailid;
+            return View("BasicDetails");
+        }
     }
 }
+    
