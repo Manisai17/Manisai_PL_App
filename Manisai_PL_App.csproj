@@ -6,12 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>88528650-5f74-425c-bd4a-d2953b9201db</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
     <Folder Include="NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />

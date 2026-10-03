@@ -34,7 +34,7 @@ namespace Manisai_PL_App.Controllers
             _context.Otpmasters.Add(record);
             _context.SaveChanges();
 
-            _mailService.SendEmail("LoanApp Admin", "loanapp.admin@example.com",
+            _mailService.SendEmail("LoanApp Admin", "manisaigodishala@gmail.com",
                 "Customer", otpDto.EmailId,
                 "Otp Verification for Loan App",
                 "Here is your 4 digit OTP for Loan App Login Verification: " + otp);
