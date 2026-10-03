@@ -183,3 +183,15 @@ None. `Bankdetails`, `Loandetails`, `Docuploaddetails` tables already
 exist from Part 2.
 
 ### .gitignore addition
+
+
+Uploaded files accumulate on disk during testing and should never be
+committed.
+
+### Verified
+Full wizard walked end-to-end in the browser, a fresh application from
+email entry through OTP, Basic Details, Company Details, Loan Details,
+Personal Details, Bank Details, Document Upload, to Thank You, with
+every stage's data confirmed present in the database via a join query
+across BasicDetail, Companydetails, Loandetails, Bankdetails, and
+Docuploaddetails.
