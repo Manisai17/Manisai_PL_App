@@ -1,0 +1,16 @@
+﻿@model List<Basicdetail>
+<h2>Pending Applications</h2>
+<table class="table">
+    <thead><tr><th>Lead ID</th><th>Name</th><th>Email</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var app in Model)
+        {
+            <tr>
+                <td>@app.Leadid</td>
+                <td>@app.Firstname @app.Lastname</td>
+                <td>@app.Emailid</td>
+                <td><a asp-controller="Manager" asp-action="ViewApplication" asp-route-id="@app.Id" class="btn btn-sm btn-primary">Review</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,16 @@
+﻿<h2>Manager Login</h2>
+@if (ViewBag.message != null)
+{
+    <div class="alert alert-danger">@ViewBag.message</div>
+}
+<form asp-controller="Home" asp-action="LoginCheck" method="post">
+    <div class="mb-3">
+        <label>Username</label>
+        <input name="username" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <input name="password" type="password" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>

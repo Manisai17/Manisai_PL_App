@@ -1,0 +1,13 @@
+﻿@{
+    var basic = ViewBag.Basicdetail as Basicdetail;
+    var loan = ViewBag.Loandetail as Loandetail;
+}
+<h2>Application: @basic.Leadid</h2>
+<p>@basic.Firstname @basic.Lastname — @basic.Emailid</p>
+<form asp-controller="Manager" asp-action="UpdateLoanStatus" method="post">
+    <input type="hidden" name="id" value="@ViewBag.Id" />
+    <div class="mb-3"><label>Approved Amount</label><input name="approvedLoanAmt" type="number" class="form-control" value="@loan?.Appliedamount" /></div>
+    <div class="mb-3"><label>Approved Tenure (months)</label><input name="approvedTenure" type="number" class="form-control" value="@loan?.Appliedtenure" /></div>
+    <div class="mb-3"><label>Approved ROI</label><input name="approvedRoi" type="number" step="0.01" class="form-control" value="@loan?.Roi" /></div>
+    <button type="submit" class="btn btn-success">Approve Loan</button>
+</form>
