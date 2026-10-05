@@ -1,169 +1,148 @@
 ﻿# Personal Loan Application (PL_APP_MVC)
 
-An ASP.NET Core MVC loan application wizard with JWT authentication and
-enforced role-based authorization for its API, cookie-based
-authentication for its browser-rendered admin area, Serilog structured
-logging, a custom request-logging middleware, and OTP email
-verification — built from scratch as a learning + portfolio project.
+A full-stack ASP.NET Core MVC loan application wizard, built from
+scratch as a learning and portfolio project. Features a complete
+applicant-facing multi-step wizard with OTP email verification and
+business-rule-driven eligibility (identity, geography, income), plus a
+Manager review area secured with real cookie-based authentication, and
+a parallel JWT-secured REST API with enforced, policy-based role
+authorization.
 
-**Status: in active development.**
+**Status: feature-complete.**
 
 ## Tech stack
 - ASP.NET Core MVC (.NET 10)
 - Entity Framework Core (code-first) + SQL Server
 - JWT Bearer authentication (API) + Cookie authentication (browser),
-  both backed by the same Usermasters table and role-based policies
-- Serilog (structured logging, console + file sinks)
+  both backed by the same `Usermasters` table and role-based policies
+- Serilog (structured logging, console + rolling file sinks)
 - MailKit (SMTP email via Brevo)
 - BCrypt (password hashing)
-- Custom ASP.NET Core middleware
+- Custom ASP.NET Core middleware (request/response logging)
+- Bootstrap (UI)
 
-## Progress
-- [x] Part 1 — Program.cs wiring + custom RequestLoggingMiddleware
-- [x] Part 2 — EF Core models + PlappContext (database layer complete)
-- [x] Part 3 — DTOs (RootDto + 6 stage-specific DTOs)
-- [x] Part 4 — Services (Mail/OTP, loan calculator, stage view mapper)
-- [x] Part 5 — HomeController, BasicDetailsController/API + real OTP flow
-- [x] Part 6 — PersonalDetails, CompanyDetails (MVC + API), business-rule rejection
-- [x] Part 7 — BankDetails, LoanDetails, DocUpload, ThankYou + all wizard views, verified end-to-end
-- [x] Part 8 — JWT login, ManagerAPIController, enforced AdminPolicy authorization, verified in Postman
-- [x] Part 9 — ManagerController + views, rejection/error views, real cookie-based authentication protecting the Manager browser area, verified end-to-end
-- [ ] Part 10 — Final secrets cleanup, full end-to-end test pass, polish
+## Features
+- Multi-step loan application wizard: Basic Details → Company Details
+  → Loan Details → Personal Details → Bank Details → Document Upload
+  → Thank You
+- OTP email verification with persisted, expiring codes (not
+  in-memory — survives app restarts, enforces a 5-minute expiry)
+- Identity validation: PAN and Aadhaar checked against reference
+  master tables before an application can proceed
+- Geographic serviceability check: pincodes are validated against a
+  whitelist/blacklist (`Pincodemaster.Servicable`) — applications from
+  non-serviceable areas are rejected with a distinct, honest message
+  separate from "invalid pincode"
+- Configurable business rules (age, income, obligation percentage)
+  driving automatic application rejection
+- Company category lookup against a reference table, with an "Others"
+  fallback for unlisted employers
+- Dynamic loan eligibility calculation (tenure, interest rate, EMI)
+  based on age and income rules
+- Document upload with file storage
+- JWT-authenticated REST API with enforced role-based authorization
+  (`[Authorize(Policy = "AdminPolicy")]`) protecting loan approval
+  endpoints — verified to return 401 without a valid token
+- Cookie-authenticated browser Manager area with automatic
+  redirect-to-login for unauthenticated access
+- Structured logging via Serilog plus a custom
+  `RequestLoggingMiddleware` logging every request's method, path,
+  status code, and duration
 
-## Actual wizard stage order
-Basic Details → Company Details → Loan Details → Personal Details →
-Bank Details → Document Upload → Thank You
+## Architecture notes
+- **Code-first EF Core**: the database schema is generated entirely
+  from C# model classes via migrations; the database is never edited
+  by hand.
+- **DTOs separate from Models**: request/response shapes are distinct
+  from database entities, preventing over-posting and decoupling the
+  API contract from the schema.
+- **Two parallel authentication schemes**: JWT for the API (manually
+  attached by the client on every request) and cookies for the
+  browser (attached automatically by the browser after login) — each
+  protecting its own surface, registered together in `Program.cs`.
+- **Explicit decimal precision** on money/rate columns
+  (`Loandetail.Roi`, `Emi`, `Approvedroi`, `Approvedemi`) to prevent
+  silent truncation.
+- **`bigint`/`long` for account numbers**, not `int` — real bank
+  account numbers routinely exceed `int`'s ~10-digit range.
 
 ## Running locally
-1. Install .NET SDK and SQL Server (Express or Developer).
+1. Install the .NET SDK and SQL Server (Express or Developer).
 2. Clone the repo and open the solution in Visual Studio.
-3. Store secrets with User Secrets (right-click project → Manage User
-   Secrets) — never commit these:
-   - `SmtpSettings:SmtpPassword` (Brevo SMTP key)
-   - `Jwt:Key` (random 32+ character string)
-4. In Package Manager Console run `Update-Database` to create the
-   PLAPP database from migrations.
-5. Seed the master/reference tables (PAN, Aadhaar, pincode, company,
-   business rules) — see sample data below.
-6. Create an admin user in `Usermasters` with a BCrypt-hashed password
-   to log in and test both JWT and cookie authentication.
+3. Right-click the project → **Manage User Secrets** and add:
+```json
+   {
+     "SmtpSettings": { "SmtpPassword": "your-brevo-smtp-key" },
+     "Jwt": { "Key": "a-random-32-plus-character-string" }
+   }
+```
+4. In Package Manager Console, run `Update-Database` to create the
+   `PLAPP` database from the included migrations.
+5. Seed the master/reference tables:
+```sql
+   INSERT INTO Panmasters (Pancardnumber, Firstname, Middlename, Lastname, Fathername, Dob)
+   VALUES ('ABCDE1234F', 'Test', NULL, 'User', 'Test Father', '1999-05-15');
+
+   INSERT INTO Aadharmasters (Aadharnumber, Firstname, Middlename, Lastname, Fathername, Dob, Address, Gender)
+   VALUES ('123456789012', 'Test', NULL, 'User', 'Test Father', '1999-05-15', 'Hyderabad', 1);
+
+   INSERT INTO Companymasters (Companyname, Category) VALUES
+   ('Infosys', 'CAT A'), ('TCS', 'CAT A'), ('Wipro', 'CAT A'),
+   ('HCL Technologies', 'CAT A'), ('Accenture', 'CAT A'),
+   ('Genpact', 'CAT B'), ('Capgemini', 'CAT B'), ('Cognizant', 'CAT B'),
+   ('Tech Mahindra', 'CAT B'), ('IBM India', 'CAT B'),
+   ('Startup Solutions Pvt Ltd', 'CAT C'), ('Local Traders Co', 'CAT C');
+
+   INSERT INTO Pincodemasters (Pincode, Circle, Village, District, State, Servicable) VALUES
+   (500001, 'Hyderabad', 'Abids', 'Hyderabad', 'Telangana', 1),
+   (500032, 'Hyderabad', 'Gachibowli', 'Hyderabad', 'Telangana', 1),
+   (500081, 'Hyderabad', 'Madhapur', 'Hyderabad', 'Telangana', 1),
+   (400001, 'Mumbai', 'Fort', 'Mumbai', 'Maharashtra', 1),
+   (400051, 'Mumbai', 'Bandra', 'Mumbai', 'Maharashtra', 1),
+   (560001, 'Bangalore', 'MG Road', 'Bangalore', 'Karnataka', 1),
+   (560103, 'Bangalore', 'Bellandur', 'Bangalore', 'Karnataka', 1),
+   (110001, 'Delhi', 'Connaught Place', 'New Delhi', 'Delhi', 1),
+   (700001, 'Kolkata', 'BBD Bagh', 'Kolkata', 'West Bengal', 0),
+   (781001, 'Guwahati', 'Pan Bazaar', 'Guwahati', 'Assam', 0);
+
+   INSERT INTO Rulesmasters (Rulename, Minvalue, Maxvalue)
+   VALUES ('age', 21, 60), ('income', 15000, 500000), ('oblpercent', 0, 50);
+```
+6. Seed one admin user: temporarily add a one-time seeding block to
+   `Program.cs` using `BCrypt.Net.BCrypt.HashPassword(...)` against
+   `Usermasters`, run once, then remove it.
 7. Press F5.
 
-### Sample seed data
-```sql
-INSERT INTO Panmasters (Pancardnumber, Firstname, Middlename, Lastname, Fathername, Dob)
-VALUES ('ABCDE1234F', 'Test', NULL, 'User', 'Test Father', '1999-05-15');
+## Testing
+- **Applicant wizard**: walk through `/BasicDetails` start to finish
+  with a fresh email address. Try pincode `700001` or `781001` to
+  confirm the serviceability rejection; try an unlisted PAN/Aadhaar to
+  confirm identity validation.
+- **Manager (browser, cookie auth)**: visit `/Manager/Index` while
+  logged out — confirm redirect to `/Home/Login`; log in with the
+  seeded admin account; confirm access is granted; log out and confirm
+  the session is genuinely cleared.
+- **Manager API (JWT)**: `POST /api/Token/Login` with admin
+  credentials to get a token; call `GET /api/ManagerAPI/PendingApplications`
+  with no token (expect 401) and with a Bearer token (expect 200).
 
-INSERT INTO Aadharmasters (Aadharnumber, Firstname, Middlename, Lastname, Fathername, Dob, Address, Gender)
-VALUES ('123456789012', 'Test', NULL, 'User', 'Test Father', '1999-05-15', 'Hyderabad', 1);
+## Known limitations
+- Business rules, reference data, and the first admin user must be
+  seeded manually — no automated seed script is included yet.
+- No automated tests (unit/integration) — all testing has been manual
+  and documented above.
+- Document uploads are stored on local disk, not cloud storage.
+- Company category is looked up and stored but does not currently
+  influence interest rate pricing — a reasonable future enhancement,
+  deliberately scoped out of this build.
 
-INSERT INTO Pincodemasters (Pincode, Circle, Village, District, State, Servicable)
-VALUES (500001, 'Hyderabad', 'Abids', 'Hyderabad', 'Telangana', 1);
-
-INSERT INTO Companymasters (Companyname, Category)
-VALUES ('Infosys', 'CAT A'), ('TCS', 'CAT A'), ('Genpact', 'CAT B');
-
-INSERT INTO Rulesmasters (Rulename, Minvalue, Maxvalue)
-VALUES ('age', 21, 60), ('income', 15000, 500000), ('oblpercent', 0, 50);
+## Project structure
 ```
-
----
-
-## Part 1 — Application Startup & Custom Middleware
-(unchanged — see previous commits)
-
----
-
-## Part 2 — Database Models & PlappContext
-(unchanged — see previous commits)
-
----
-
-## Part 3 — DTOs (Data Transfer Objects)
-(unchanged — see previous commits)
-
----
-
-## Part 4 — Services
-(unchanged — see previous commits)
-
----
-
-## Part 5 — BasicDetails Flow & OTP Verification
-(unchanged — see previous commits)
-
----
-
-## Part 6 — PersonalDetails & CompanyDetails
-(unchanged — see previous commits)
-
----
-
-## Part 7 — BankDetails, LoanDetails, DocUpload, ThankYou
-(unchanged — see previous commits)
-
----
-
-## Part 8 — JWT Login & Enforced Role Authorization
-(unchanged — see previous commits)
-
----
-
-## Part 9 — Completing the Views & Real Manager Authentication
-
-### What this part does
-Adds the browser-facing Manager review area and secures it with real
-cookie-based authentication, running alongside the JWT authentication
-built for the API in Part 8 — two separate schemes, each protecting
-its own part of the app, both backed by the same Usermasters table.
-
-### Files added/changed
-- `Program.cs` — `AddAuthentication` now registers both JWT Bearer
-  (default scheme) and a named `"Cookies"` scheme with a `LoginPath`
-  that auto-redirects unauthenticated visitors
-- `Controllers/HomeController.cs` — `LoginCheck` verifies real
-  BCrypt-hashed credentials from `Usermasters` and calls
-  `HttpContext.SignInAsync("Cookies", principal)` to issue a real
-  authentication cookie; added a `Logout` action using `SignOutAsync`
-- `Controllers/ManagerController.cs` — marked
-  `[Authorize(AuthenticationSchemes = "Cookies", Policy = "AdminPolicy")]`
-  at the class level; `Index` lists pending applications,
-  `ViewApplication` shows one application, `UpdateLoanStatus` approves
-  it (same EMI/ROI calculation as `ManagerAPIController.ApproveLoan`)
-- `Views/Manager/Index.cshtml`, `Views/Manager/ViewApplication.cshtml`
-- `Views/Home/Login.cshtml` (was missing, restored)
-- `Views/Shared/Rejected/Thankyou.cshtml` — rejection confirmation page
-- `Views/Shared/Error.cshtml` — cleaned up from the default template
-- `_Layout.cshtml` — added a Logout link in the nav bar
-
-### How the cookie protection actually works
-An unauthenticated request to any `/Manager/*` route is automatically
-redirected to `/Home/Login` by the cookie scheme's configured
-`LoginPath` — no manual redirect code required anywhere. After a
-successful login, `SignInAsync` issues an encrypted cookie containing
-the user's role claim; the browser sends it automatically on every
-subsequent request; `UseAuthorization` checks that claim against
-`AdminPolicy` before any `ManagerController` action runs.
-
-### Why two authentication schemes instead of one
-JWT bearer tokens are carried manually by the client on every request
-(an `Authorization` header) — ideal for Postman/JavaScript API calls,
-but browsers don't attach custom headers automatically on normal page
-navigation. Cookie authentication is the standard ASP.NET Core
-approach for browser-rendered pages: the browser sends the cookie
-automatically once issued. Both schemes are registered together in
-`Program.cs`, and each controller specifies which one it expects.
-
-### Verified end-to-end
-- Visiting `/Manager/Index` with no prior login redirects to
-  `/Home/Login` automatically (tested in an incognito window)
-- Logging in with the real admin account (BCrypt-verified) grants
-  access to the Manager area
-- Logout clears the cookie; `/Manager/Index` redirects to login again
-  afterward, confirming the session genuinely ended
-- An application failing income/obligation rules correctly shows the
-  rejection page instead of crashing
-
-### Database changes needed this part
-None. Reuses the same `Usermasters` table and admin account seeded in
-Part 8.
+Controllers/   - MVC and API controllers for every wizard stage, auth, and admin
+Models/        - EF Core entities + PlappContext
+Dtos/          - Request/response shapes, separate from entities
+Services/      - Mail, loan calculation, stage routing
+Middleware/    - Custom request logging middleware
+Views/         - Razor views for the applicant wizard and Manager area
+Migrations/    - EF Core code-first migrations
+```
