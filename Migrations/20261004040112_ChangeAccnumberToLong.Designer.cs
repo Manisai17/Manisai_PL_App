@@ -4,6 +4,7 @@ using Manisai_PL_App.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Manisai_PL_App.Migrations
 {
     [DbContext(typeof(PlappContext))]
-    partial class PlappContextModelSnapshot : ModelSnapshot
+    [Migration("20261004040112_ChangeAccnumberToLong")]
+    partial class ChangeAccnumberToLong
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -263,23 +266,19 @@ namespace Manisai_PL_App.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Approvedemi")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("Approvedroi")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("Approvedtenure")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Emi")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("Roi")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

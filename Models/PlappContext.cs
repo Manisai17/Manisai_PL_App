@@ -50,8 +50,11 @@ public partial class PlappContext : DbContext
         modelBuilder.Entity<Loandetail>(entity =>
         {
             entity.HasOne(d => d.App).WithMany(p => p.Loandetails).HasForeignKey(d => d.Appid);
+            entity.Property(e => e.Roi).HasPrecision(5, 2);
+            entity.Property(e => e.Emi).HasPrecision(12, 2);
+            entity.Property(e => e.Approvedroi).HasPrecision(5, 2);
+            entity.Property(e => e.Approvedemi).HasPrecision(12, 2);
         });
-
         modelBuilder.Entity<Docuploaddetail>(entity =>
         {
             entity.HasOne(d => d.App).WithMany(p => p.Docuploaddetails).HasForeignKey(d => d.Appid);

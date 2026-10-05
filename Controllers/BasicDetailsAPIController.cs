@@ -103,9 +103,10 @@ namespace Manisai_PL_App.Controllers
 
             var pincodeMaster = _context.Pincodemasters.FirstOrDefault(p => p.Pincode == basicDetails.Pincode);
             if (pincodeMaster == null) return BadRequest("Invalid Pincode");
+            if (pincodeMaster.Servicable != 1) return BadRequest("We're sorry, loans are not currently available in your area");
 
             var basicDetail = _context.Basicdetails.FirstOrDefault(d => d.Emailid == basicDetails.EmailId);
-            if (basicDetail == null) return BadRequest("Application not found — verify OTP first");
+            if (basicDetail == null) return BadRequest("Application not found — please verify OTP first");
 
             basicDetail.Firstname = basicDetails.FirstName;
             basicDetail.Lastname = basicDetails.LastName;

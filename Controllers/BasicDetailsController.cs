@@ -89,13 +89,6 @@ namespace Manisai_PL_App.Controllers
 
         public IActionResult ValidateBasicDetails(BasicDetailsDto basicDetails)
         {
-            if (basicDetails == null || basicDetails.MobileNumber == null || basicDetails.FirstName == null
-                || basicDetails.PanNumber == null || basicDetails.AadharNumber == null)
-            {
-                TempData["Error"] = "All fields are required";
-                return RedirectToAction("Index");
-            }
-
             var panMaster = _context.Panmasters.FirstOrDefault(p => p.Pancardnumber == basicDetails.PanNumber);
             if (panMaster == null)
             {
@@ -114,6 +107,11 @@ namespace Manisai_PL_App.Controllers
             if (pincodeMaster == null)
             {
                 TempData["Error"] = "Invalid Pincode";
+                return RedirectToAction("Index");
+            }
+            if (pincodeMaster.Servicable != 1)
+            {
+                TempData["Error"] = "We're sorry, loans are not currently available in your area";
                 return RedirectToAction("Index");
             }
 
@@ -154,6 +152,7 @@ namespace Manisai_PL_App.Controllers
             string[] words = mapping.Split('/');
             return RedirectToAction(words[1], words[0], new { id = basicDetail.Id });
         }
+
         public IActionResult BasicDetails(int id)
         {
             var basicDetails = _context.Basicdetails.FirstOrDefault(b => b.Id == id);
@@ -164,4 +163,3 @@ namespace Manisai_PL_App.Controllers
         }
     }
 }
-    

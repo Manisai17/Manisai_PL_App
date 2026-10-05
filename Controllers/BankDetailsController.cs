@@ -23,7 +23,8 @@ namespace Manisai_PL_App.Controllers
         public IActionResult SaveBankDetails(BankDetailsDto bankDetailsDto)
         {
             if (bankDetailsDto.Bankname == null || bankDetailsDto.Bankbranch == null ||
-                bankDetailsDto.Ifsccode == null || bankDetailsDto.Acctype == null || bankDetailsDto.Accholdername == null)
+                bankDetailsDto.Ifsccode == null || bankDetailsDto.Acctype == null ||
+                bankDetailsDto.Accholdername == null || bankDetailsDto.Accnumber == 0)
             {
                 TempData["Error"] = "All fields are required";
                 return RedirectToAction("Index", new { id = bankDetailsDto.AppId });
