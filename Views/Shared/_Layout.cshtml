@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿```
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,7 +11,10 @@
     <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
         <div class="container">
             <a class="navbar-brand" asp-controller="Home" asp-action="Index">Personal Loan App</a>
-            <a asp-controller="Home" asp-action="Logout" class="btn btn-sm btn-outline-secondary ms-auto">Logout</a>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Home" asp-action="Logout" class="btn btn-sm btn-outline-secondary ms-auto">Logout</a>
+            }
         </div>
     </nav>
     <div class="container">
@@ -22,6 +26,11 @@
             @RenderBody()
         </main>
     </div>
+
+    <footer class="border-top mt-5 py-3 text-center text-muted">
+        <small><a asp-controller="Home" asp-action="Login">Manager Login</a></small>
+    </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
